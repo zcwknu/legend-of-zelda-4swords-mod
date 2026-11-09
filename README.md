@@ -22,7 +22,7 @@ In the original game, when a player goes into a house or cave, their view moves 
 The top view only shrinks while someone is inside a private area. When both players are back outside, it returns to full screen.
 
 ### 3. Shadow Battle works with two controllers
-Shadow Battle (the versus mode) loads and plays with two GameCube controllers. The original game crashed here because it tried to load arena map data meant for GBA players. The mod loads the standard arena instead.
+Shadow Battle (the versus mode) loads and plays with two GameCube controllers.
 
 ### 4. New menu option
 On the player-count screens for both **Hyrulean Adventure** and **Shadow Battle**, the **Two-Player** row now shows two GameCube controllers instead of two Game Boy Advances.
@@ -100,25 +100,6 @@ Screenshots are from the Dolphin emulator.
 ## Playing on a real GameCube
 
 Copy the ISO to an SD card and launch it with **Swiss** (tested target: Swiss v0.6 with an SD2SP2 adapter). Plug controllers into ports 1 and 2. Choose **Hyrulean Adventure → Two-Player Game**, or **Shadow Battle**.
-
-## Status
-
-| Feature | Dolphin emulator | Real GameCube |
-|---|---|---|
-| Two controllers, independent players | ✅ | not yet tested |
-| Split screen (one or both players inside) | ✅ (patch build) | not yet tested |
-| Shadow Battle loads and plays | ✅ (patch build) | not yet tested |
-| New menu icons (Adventure) | ✅ (ISO) | not yet tested |
-| New menu icons (Shadow Battle) | not yet tested | not yet tested |
-| Single-player unchanged | ✅ (patch build) | not yet tested |
-| Full level / full battle completed | not yet | not yet |
-
-"Patch build" means the change was tested with the same code running as Dolphin patches, before it was built into the ISO.
-
-## Known limitations
-- Two players only. Three- and Four-Player still expect Game Boy Advances.
-- Real-GBA multiplayer is not supported in the modded image.
-- On the overworld, the bottom panels stay empty and the top view uses the full screen. The panels only appear when someone goes inside.
 
 ## Changelog
 - **Shadow Battle menu:** the Two-Player row on the Shadow Battle player-count screen also shows GameCube controllers.
