@@ -1,8 +1,10 @@
 # Four Swords Adventures: Two GameCube Controllers Mod
 
+![Split screen with both players inside](docs/img/split_screen_both_inside.png)
+
 A mod for **The Legend of Zelda: Four Swords Adventures** (GameCube, USA, `G4SE01`, revision 0). It lets two people play the multiplayer modes with two regular GameCube controllers. The original game requires every multiplayer player to have a Game Boy Advance and a GBA link cable.
 
-**Due to GitHub size limitations and me being scared of Nintendo suing me; there is no game file uploaded; however, the tools are below to create your own version.**.
+> **No game files are included.** You need your own copy of the game. This repo only contains the tools and patches that modify it.
 
 ## What it does
 
@@ -51,20 +53,53 @@ This is the game's own GameCube controller layout. Nothing was remapped.
 - **Menu:** edits the menu layout file (`adv_n_player.blo` inside `entry.arc`) so the Two-Player row uses the GameCube controller picture.
 - **Where the new code lives:** about 1 KB of new code is added as an extra section of the game's executable (`main.dol`) at `0x80555F80`, right after the game's own memory. The game's heap start is raised so nothing overwrites it. The low-memory area some loaders and cheat engines use is left alone.
 
-## Building
+## Building your own ISO
 
-Requirements: Python 3 and your own clean ISO.
+Requirements: **Python 3** (no extra packages) and **your own clean USA ISO** (`G4SE01`, SHA-1 `4bd926835dfbeaae72d01abe5fb581b527154a30`).
 
-1. Extract the disc (`tools/gcfs.py`).
-2. Bake the patches into `main.dol` (`build/bake_dol.py`).
-3. Patch the menu file (`menu/patch_menu.py`).
-4. Rebuild the ISO (`tools/copy_used.py` then `tools/build_iso.py`). Only `main.dol` and `entry.arc` change. They are written into unused space on the disc, and all other game files stay byte-for-byte identical to the original.
+```
+python3 build.py "Legend of Zelda, The - Four Swords Adventures (USA).iso" "Zelda FSA 2GC.iso"
+```
 
-The result is a standard full-size GameCube disc image (1,459,978,240 bytes) that keeps the original game ID, `G4SE01`.
+That's it. The script:
+1. Checks that your ISO is the expected clean USA copy. Your original is only read, never changed.
+2. Builds the patches into the game's executable (`build/bake_dol.py`, using `patches/G4SE01_2gc_patches.ini`).
+3. Patches the menu file (`menu/patch_menu.py`).
+4. Writes the new ISO (`tools/copy_used.py`, then `tools/build_iso.py`). Only `main.dol` and `entry.arc` change. They are written into unused space on the disc, and all other game files stay byte-for-byte identical.
+5. Prints the SHA-1 of the result. The expected value is `336f8607b761ac5d0e0ac76f8cfc9ada683d7855`.
+
+The output is a standard full-size GameCube disc image (1,459,978,240 bytes) with the original game ID `G4SE01`. If the build is interrupted, run the same command again and it resumes.
+
+### Trying it in Dolphin without building
+`patches/G4SE01_2gc_patches.ini` is a Dolphin game-patch file. Copy it to Dolphin's `GameSettings` folder as `G4SE01.ini` to run the gameplay and split-screen changes on an unmodified ISO. The menu icons need the built ISO. Don't use this patch file together with the built ISO.
+
+### Repository layout
+| Path | What it is |
+|---|---|
+| `build.py` | One-command build |
+| `patches/G4SE01_2gc_patches.ini` | All code patches (Dolphin patch format) |
+| `build/bake_dol.py` | Builds the patches into `main.dol` and adds the new code section |
+| `menu/patch_menu.py` | Changes the Two-Player menu icons (plus `rarc.py` and `yaz0enc.py` archive helpers) |
+| `tools/gcfs.py` | Reads the GameCube disc file system |
+| `tools/copy_used.py`, `tools/build_iso.py` | Write the patched disc image |
+| `docs/img/` | Screenshots |
 
 ## Playing on a real GameCube
 
 Copy the ISO to an SD card and launch it with **Swiss** (tested target: Swiss v0.6 with an SD2SP2 adapter). Plug controllers into ports 1 and 2. Choose **Hyrulean Adventure → Two-Player Game**, or **Shadow Battle**.
+
+## Status
+
+| Feature | Dolphin emulator | Real GameCube |
+|---|---|---|
+| Two controllers, independent players | ✅ | not yet tested |
+| Split screen (one or both players inside) | ✅ (patch build) | not yet tested |
+| Shadow Battle loads and plays | ✅ (patch build) | not yet tested |
+| New menu icons | ✅ (ISO) | not yet tested |
+| Single-player unchanged | ✅ (patch build) | not yet tested |
+| Full level / full battle completed | not yet | not yet |
+
+"Patch build" means the change was tested with the same code running as Dolphin patches, before it was built into the ISO.
 
 ## Known limitations
 - Two players only. Three- and Four-Player still expect Game Boy Advances.

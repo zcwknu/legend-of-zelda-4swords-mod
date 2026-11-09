@@ -1,0 +1,14 @@
+# Never commit game data
+*.iso
+*.gcm
+*.rvz
+*.ciso
+*.gcz
+*.wbfs
+*.nkit.*
+*.dol
+*.arc
+*.blo
+*.bti
+*.raw
+__pycache__/
