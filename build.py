@@ -10,7 +10,7 @@ import hashlib, os, subprocess, sys, tempfile, shutil
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ORIG_SHA1 = '4bd926835dfbeaae72d01abe5fb581b527154a30'   # G4SE01 rev0 (Redump)
-OUT_SHA1 = '6e21bf45e9d8095994cb79fa2f2eb0bb8daa7ded'    # expected result
+OUT_SHA1 = '336f8607b761ac5d0e0ac76f8cfc9ada683d7855'    # expected result
 PATCHES = os.path.join(HERE, 'patches', 'G4SE01_2gc_patches.ini')
 
 def sha1(path):

@@ -22,12 +22,18 @@ In the original game, when a player goes into a house or cave, their view moves 
 The top view only shrinks while someone is inside a private area. When both players are back outside, it returns to full screen.
 
 ### 3. Shadow Battle works with two controllers
-Shadow Battle (the versus mode) loads and plays with two GameCube controllers.
+Shadow Battle (the versus mode) loads and plays with two GameCube controllers. The original game crashed here: when a GameCube controller is in a Shadow Battle it switches to an unused, controller-only stage table (`map500_ctrl.csv`) whose entries refer to arena layouts 12–23, while the disc only has layouts 00–09. The mod always uses the normal table (`map500.csv`), the one the game uses with Game Boy Advances, so stage selection works as in the original.
 
 ### 4. New menu option
 On the player-count screens for both **Hyrulean Adventure** and **Shadow Battle**, the **Two-Player** row now shows two GameCube controllers instead of two Game Boy Advances.
 
-### 5. Single player is unchanged
+### 5. Dialog on the TV
+In the original multiplayer, text spoken inside houses and caves (including Yes/No choices) was shown on the player's Game Boy Advance. In this mod it appears in a normal text box on the TV and advances with **A**.
+
+### 6. Even out the Links
+In multiplayer one player can end up holding three Links while the other has one. Either player can **hold L and R fully for 3 seconds** to hand one Link back, so each player has two again.
+
+### 7. Single player is unchanged
 Single-player plays exactly like the original, including its own window on the TV when you go into houses. All new behavior only switches on in the two-controller mode.
 
 ## Controls (same for both players)
@@ -44,14 +50,18 @@ Each player's GameCube controller replaces their Game Boy Advance. The buttons u
 | Quick formation | C-Stick |
 | Split off / switch Links | X or D-Pad |
 | Pause | START |
+| Even out the Links (3 + 1 → 2 + 2) | Hold L + R fully for 3 seconds |
 
 ## How it works (short version)
 
 - **Input:** the game already had code for a GameCube controller player. It was only allowed for single-player. Small patches let the multiplayer setup accept a controller in each port and register each player as a "GameCube controller" player. A check that decides whether a player "has a GBA" now also accepts a controller, but only in the two-controller mode. That way single-player keeps its original behavior.
 - **Display:** the game already draws each player's private view as a window on the TV (that's how single-player shows houses). The mod uses that window for both players and moves the windows to the bottom of the screen. It also scales the main 3D view (viewport and scissor) down into the top area whenever a window is open.
-- **Shadow Battle:** forces the game to use the standard arena map file.
+- **Shadow Battle:** always uses the normal (GBA) stage table; the unused controller-only table is skipped.
+- **Link rebalance:** while L and R are both fully pressed, their normal actions are held back; after 3 seconds, one follower of the player with three Links is handed to the other player.
+- **Triggers:** the game remembers whether L/R is "pressed most of the way" per controller instead of sharing one value between both controllers.
+- **Dialog:** every "send this text to the player's GBA" call in the game's text system (normal text and Yes/No choices) is redirected, in two-controller mode only, to the matching TV text-box routine.
 - **Menus:** edits the two player-count layout files inside `entry.arc` (`adv_n_player.blo` and `bat_n_player.blo`) so their Two-Player rows use the GameCube controller picture. The Shadow Battle layout didn't reference that picture, so it is added to its texture list.
-- **Where the new code lives:** about 1 KB of new code is added as an extra section of the game's executable (`main.dol`) at `0x80555F80`, right after the game's own memory. The game's heap start is raised so nothing overwrites it. The low-memory area some loaders and cheat engines use is left alone.
+- **Where the new code lives:** about 6 KB of space for new code is added as an extra section of the game's executable (`main.dol`) at `0x80555F80`, right after the game's own memory. The game's heap start is raised so nothing overwrites it. The low-memory area some loaders and cheat engines use is left alone.
 
 ## Building your own ISO
 
@@ -66,7 +76,7 @@ That's it. The script:
 2. Builds the patches into the game's executable (`build/bake_dol.py`, using `patches/G4SE01_2gc_patches.ini`).
 3. Patches the two player-count menus (`menu/patch_menu.py`).
 4. Writes the new ISO (`tools/copy_used.py`, then `tools/build_iso.py`). Only `main.dol` and `entry.arc` change. They are written into unused space on the disc, and all other game files stay byte-for-byte identical.
-5. Prints the SHA-1 of the result. The expected value is `6e21bf45e9d8095994cb79fa2f2eb0bb8daa7ded`.
+5. Prints the SHA-1 of the result. The value listed in `build.py` (`OUT_SHA1`) is from an older build, so a "differs" warning is expected until it is updated.
 
 The output is a standard full-size GameCube disc image (1,459,978,240 bytes) with the original game ID `G4SE01`. If the build is interrupted, run the same command again and it resumes.
 
@@ -101,7 +111,35 @@ Screenshots are from the Dolphin emulator.
 
 Copy the ISO to an SD card and launch it with **Swiss** (tested target: Swiss v0.6 with an SD2SP2 adapter). Plug controllers into ports 1 and 2. Choose **Hyrulean Adventure → Two-Player Game**, or **Shadow Battle**.
 
+## Status
+
+| Feature | Dolphin emulator | Real GameCube |
+|---|---|---|
+| Two controllers, independent players | ✅ | not yet tested |
+| Split screen (one or both players inside) | ✅ (patch build) | not yet tested |
+| Shadow Battle loads and plays | ✅ (patch build) | not yet tested |
+| New menu icons (Adventure) | ✅ (ISO) | not yet tested |
+| New menu icons (Shadow Battle) | not yet tested | not yet tested |
+| Dialog on the TV (talking to NPCs indoors) | ✅ (patch build) | not yet tested |
+| L + R Link rebalance | ✅ (patch build) | not yet tested |
+| Per-controller L/R trigger thresholds | not yet tested | not yet tested |
+| Single-player unchanged | ✅ (patch build) | not yet tested |
+| Full level / full battle completed | not yet | not yet |
+
+"Patch build" means the change was tested with the same code running as Dolphin patches, before it was built into the ISO.
+
+## Known limitations
+- Two players only. Three- and Four-Player still expect Game Boy Advances.
+- Real-GBA multiplayer is not supported in the modded image.
+- There is no permanent heart meter or equipped-item icon per player in 2-player mode (the original game drew those on each player's GBA). Hearts still pop up above a Link when it loses or gains health.
+- Some scenes (for example Tingle's) can open the single-player "Game Boy Advance SP" window on the TV. That is the game's own window and is left as is.
+- Text boxes appear on the shared top screen, not inside the player's own panel.
+- On the overworld, the bottom panels stay empty and the top view uses the full screen. The panels only appear when someone goes inside.
+
 ## Changelog
+- **Link rebalance and triggers:** hold L + R for 3 seconds to even out the Links; L/R analog thresholds are now tracked per controller.
+- **Game Boy SP window allowed:** the earlier patch that hid this window was removed, so the game shows it whenever it wants to.
+- **Dialog:** indoor dialog and Yes/No choices now show on the TV instead of freezing while waiting for a Game Boy Advance.
 - **Shadow Battle menu:** the Two-Player row on the Shadow Battle player-count screen also shows GameCube controllers.
 - **First ISO build:** all patches built into the game's executable, a one-command build script, and the Hyrulean Adventure Two-Player menu icons.
 - **Split screen:** a three-region layout (shared view on top, one panel per player at the bottom), plus the Shadow Battle crash fix.
