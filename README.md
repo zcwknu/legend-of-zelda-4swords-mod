@@ -111,31 +111,6 @@ Screenshots are from the Dolphin emulator.
 
 Copy the ISO to an SD card and launch it with **Swiss** (tested target: Swiss v0.6 with an SD2SP2 adapter). Plug controllers into ports 1 and 2. Choose **Hyrulean Adventure → Two-Player Game**, or **Shadow Battle**.
 
-## Status
-
-| Feature | Dolphin emulator | Real GameCube |
-|---|---|---|
-| Two controllers, independent players | ✅ | not yet tested |
-| Split screen (one or both players inside) | ✅ (patch build) | not yet tested |
-| Shadow Battle loads and plays | ✅ (patch build) | not yet tested |
-| New menu icons (Adventure) | ✅ (ISO) | not yet tested |
-| New menu icons (Shadow Battle) | not yet tested | not yet tested |
-| Dialog on the TV (talking to NPCs indoors) | ✅ (patch build) | not yet tested |
-| L + R Link rebalance | ✅ (patch build) | not yet tested |
-| Per-controller L/R trigger thresholds | not yet tested | not yet tested |
-| Single-player unchanged | ✅ (patch build) | not yet tested |
-| Full level / full battle completed | not yet | not yet |
-
-"Patch build" means the change was tested with the same code running as Dolphin patches, before it was built into the ISO.
-
-## Known limitations
-- Two players only. Three- and Four-Player still expect Game Boy Advances.
-- Real-GBA multiplayer is not supported in the modded image.
-- There is no permanent heart meter or equipped-item icon per player in 2-player mode (the original game drew those on each player's GBA). Hearts still pop up above a Link when it loses or gains health.
-- Some scenes (for example Tingle's) can open the single-player "Game Boy Advance SP" window on the TV. That is the game's own window and is left as is.
-- Text boxes appear on the shared top screen, not inside the player's own panel.
-- On the overworld, the bottom panels stay empty and the top view uses the full screen. The panels only appear when someone goes inside.
-
 ## Changelog
 - **Link rebalance and triggers:** hold L + R for 3 seconds to even out the Links; L/R analog thresholds are now tracked per controller.
 - **Game Boy SP window allowed:** the earlier patch that hid this window was removed, so the game shows it whenever it wants to.
