@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """Bake the Dolphin [OnFrame] patch set into main.dol.
-The code cave (Dolphin build: 0x80002800) is relocated into a new DOL text
+The code cave (Dolphin build: 0x80001800-0x80003000) is relocated into a new DOL text
 section placed after the game's debug stack (0x80555F80), and OSInit's
 ArenaLo constants are raised so the heap starts after the cave."""
 import re, struct, sys
-OLD = 0x80002800; NB = 0x80555F80; CSIZE = 0x400; NEND = NB + CSIZE
+OLD = 0x80001800; NB = 0x80555F80; CSIZE = 0x1800; NEND = NB + CSIZE
+LO = OLD & 0xffff
 def relo(a): return a - OLD + NB
+# cave words that are data (floats/flags/tags), copied verbatim: exp5 flag + scale constants, exp6 panel anchors,
+# exp11/exp12 per-port timers and trigger flags (0x80001A00-0x80001A60) are
+# zero-filled and never written by the patch file
+DATA = [(0x80002A40, 0x80002A50), (0x80002BE0, 0x80002BF0)]
+def isdata(a): return any(s <= a < e for s, e in DATA)
 def incave(a): return OLD <= a < OLD + CSIZE
 
 def load_patches(ini):
@@ -46,7 +52,7 @@ def main(src, ini, dst):
     cave = bytearray(CSIZE); n_dol = 0
     for a, v in P:
         if incave(a):
-            cave[a - OLD:a - OLD + 4] = struct.pack('>I', fix_branch(a, v, relo(a)))
+            cave[a - OLD:a - OLD + 4] = struct.pack('>I', v if isdata(a) else fix_branch(a, v, relo(a)))
         else:
             o = a2o(a); d[o:o + 4] = struct.pack('>I', fix_branch(a, v, a)); n_dol += 1
     # absolute refs to cave data: lis rX,0x8000 ; D-form with base rX and imm in cave range
@@ -59,12 +65,19 @@ def main(src, ini, dst):
             for j in range(i + 4, min(i + 0x40, CSIZE), 4):
                 w2 = W(j); op = w2 >> 26
                 if op in (14, 15, 32, 34, 40) and ((w2 >> 21) & 31) == rx and ((w2 >> 16) & 31) != rx: break
-                if op in (32, 34, 36, 38, 40, 44, 48, 52) and ((w2 >> 16) & 31) == rx:
+                if op in (14, 32, 34, 36, 38, 40, 44, 48, 52) and ((w2 >> 16) & 31) == rx:
                     imm = w2 & 0xffff
-                    if 0x2800 <= imm < 0x2800 + CSIZE:
+                    if LO <= imm < LO + CSIZE:
                         na = relo(0x80000000 + imm); assert (na & 0xffff) < 0x8000
                         cave[j:j + 4] = struct.pack('>I', (w2 & 0xffff0000) | (na & 0xffff)); nfix += 1
                         cave[i:i + 4] = struct.pack('>I', (w & 0xffff0000) | (na >> 16))
+                        if op == 14: break
+    # sanity: every lis 0x8000 must have been relocated, and no cave word may still point into the Dolphin cave
+    for i in range(0, CSIZE, 4):
+        w = W(i)
+        if w >> 26 in (14, 32, 34, 36, 38, 40, 44, 48, 52) and LO <= (w & 0xffff) < LO + CSIZE and ((w >> 16) & 31) != 0:
+            prev = [W(j) for j in range(max(0, i - 0x40), i, 4)]
+            assert not any(p >> 26 == 15 and (p & 0xffff) == 0x8000 for p in prev), 'unrelocated data ref at +0x%x' % i
     # sanity: no remaining 0x8000 lis
     for i in range(0, CSIZE, 4):
         w = W(i); assert not (w >> 26 == 15 and (w & 0xffff) == 0x8000), hex(i)
